@@ -1,4 +1,4 @@
-import { Client, Databases, ID, Storage } from "appwrite";
+import { Client, Databases, ID, Query, Storage } from "appwrite";
 import environment_variables from "../confi/confi";
 
 export class Service{
@@ -64,6 +64,31 @@ export class Service{
             slug
         )
      }
+    async getUserPosts(userId) {
+        // Validate the userId
+        if (!userId) {
+            console.error("Error: userId is null or undefined.");
+            return { documents: [] }; // Return an empty object to prevent further issues
+        }
+
+        try {
+            // Attempt to fetch documents with the given userId
+            const response = await this.dataBases.listDocuments(
+                environment_variables.appwriteDatabaseId,
+                environment_variables.appwriteCollectionId,
+                [Query.equal('userId', [userId])]
+            );
+
+            // Log the response for debugging purposes
+            console.log("Documents fetched successfully:", response);
+            return response;
+        } catch (error) {
+            // Log the error and return a fallback value
+            console.error("Error fetching user posts from Appwrite:", error);
+            return { documents: [] }; // Return an empty array in case of an error
+        }
+    }
+
 
      async uploadFile(file){
         try {

@@ -11,6 +11,7 @@ export default function CreatePost() {
     const editorRef = useRef(null);
 
     const [title, setTile] = useState("");
+    const [imgURL, setImgURL] = useState(null);
     // const [content, setContent] = useState("");
     const [featuredImage, setImage] = useState(null);
 
@@ -33,6 +34,18 @@ export default function CreatePost() {
             console.log(fileLocation);
             const fileId = fileLocation.$id;
             setImage(fileId);
+
+            const fetchImageURL = async () => {
+                try {
+                    const url = await services.filePreview(fileId);
+                    setImgURL(url); // Update state with the image URL
+                } catch (error) {
+                    console.error("Error fetching image URL:", error);
+                }
+            };
+    
+            fetchImageURL();
+
         } catch (error) {
             console.log(error)
         }
@@ -40,7 +53,7 @@ export default function CreatePost() {
     }
 
 
-    const post = async() => {
+    const post = async () => {
 
 
         const content = editorRef.current.getContent();
@@ -53,15 +66,29 @@ export default function CreatePost() {
             userId
         }
         try {
-            const result = await services.createPost({...data})
+            const result = await services.createPost({ ...data })
 
             console.log(result)
-        
+
         } catch (error) {
             console.log(error)
         }
         console.log(data)
     };
+
+    // useEffect(() => {
+    //     const fetchImageURL = async () => {
+    //         try {
+    //             const url = await services.filePreview(featuredImg);
+    //             setImgURL(url); // Update state with the image URL
+    //         } catch (error) {
+    //             console.error("Error fetching image URL:", error);
+    //         }
+    //     };
+
+    //     fetchImageURL();
+    // }, [featuredImg]);
+
     return (
         <>
             <div className='flex justify-around gap-5 max-w-7xl'>
@@ -96,10 +123,16 @@ export default function CreatePost() {
                 <div>
                     <input type="file" id='file' onChange={uploadFile} />
                     <div>
-                        <img src="" alt="" />
+                        <figure>
+                            {/* Show a placeholder while the image URL is loading */}
+                            {imgURL ? (
+                                <img className="rounded-xl max-w-96" src={imgURL} alt={title || "Featured Image"} />
+                            ) : (
+                                <div className="placeholder">Loading Image...</div>
+                            )}
+                        </figure>
 
-                        <div
-                            dangerouslySetInnerHTML={{ __html: "<p>This <em><strong>is the initial</strong></em> content of the editor.</p>" }}></div>
+
                     </div>
 
                 </div>
