@@ -23,8 +23,9 @@ export class AuthServices {
             await this.logIn({email , password});
             return user;
         } catch (err ) {
-            throw err
+            
             console.log(err);
+            throw err
         }
     }
     async logIn({email , password}){
@@ -47,6 +48,7 @@ export class AuthServices {
             return await this.account.get()
             
         } catch (error) {
+            console.log(error);
             return null;
         }
     }

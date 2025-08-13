@@ -15,7 +15,6 @@ export class Service{
     }
 
     async createPost({title, slug, content,author , featuredImg , status , userId}){
-
         try{
             const response = await this.dataBases.createDocument(environment_variables.appwriteDatabaseId, environment_variables.appwriteCollectionId,slug ,{status , featuredImg ,author,  content , title , userId} )
             return response;
@@ -23,12 +22,12 @@ export class Service{
             console.log("error in creating post :: " , error);
         }
     }
+    
     async getAllPosts(){
         try{
             const data = await this.dataBases.listDocuments(
                 environment_variables.appwriteDatabaseId,
                 environment_variables.appwriteCollectionId
-
             )
             return data;
         }catch(err){
@@ -37,98 +36,101 @@ export class Service{
     }
 
     async updatePost(slug , {title ,author ,  content , featuredImg , status }){
-
         try {
-            return await this.dataBases.updateDocument(environment_variables.appwriteDatabaseId , environment_variables.appwriteCollectionId , slug , {title , featuredImg , content , status })
+            return await this.dataBases.updateDocument(
+                environment_variables.appwriteDatabaseId, 
+                environment_variables.appwriteCollectionId, 
+                slug, 
+                {title , featuredImg , content , status, author }
+            )
         } catch (error) {
-            
+            console.log("Error updating post:", error);
+            throw error;
         }
     }
-     async deletePost({slug}){
+    
+    async deletePost(slug){
         try {
-            return await this.dataBases(
+            return await this.dataBases.deleteDocument(
                 environment_variables.appwriteDatabaseId, 
                 environment_variables.appwriteCollectionId, 
                 slug
             )
         } catch (error) {
-            console.log(error);
-            return false;
-            
+            console.log("Error deleting post:", error);
+            throw error;
         }
-     }
-     async getPost({slug}){
+    }
+    
+    async getPost({slug}){
         return await this.dataBases.getDocument(
             environment_variables.appwriteDatabaseId, 
             environment_variables.appwriteCollectionId, 
             slug
         )
-     }
+    }
+    
     async getUserPosts(userId) {
-        // Validate the userId
         if (!userId) {
             console.error("Error: userId is null or undefined.");
-            return { documents: [] }; // Return an empty object to prevent further issues
+            return { documents: [] };
         }
 
         try {
-            // Attempt to fetch documents with the given userId
             const response = await this.dataBases.listDocuments(
                 environment_variables.appwriteDatabaseId,
                 environment_variables.appwriteCollectionId,
                 [Query.equal('userId', [userId])]
             );
-
-            // Log the response for debugging purposes
-            console.log("Documents fetched successfully:", response);
             return response;
         } catch (error) {
-            // Log the error and return a fallback value
             console.error("Error fetching user posts from Appwrite:", error);
-            return { documents: [] }; // Return an empty array in case of an error
+            return { documents: [] };
         }
     }
 
+    
 
-     async uploadFile(file){
+    async uploadFile(file){
         try {
             return await this.storage.createFile(
-                environment_variables.appwriteBucketId , 
-            ID.unique() , 
-        file
-    )
+                environment_variables.appwriteBucketId, 
+                ID.unique(), 
+                file
+            )
         } catch (error) {
-            console.log(error)
-            
+            console.log("Error uploading file:", error);
+            throw error;
         }
-     }
-     async filePreview(fileId){
+    }
+    
+    async filePreview(fileId){
         try{
             const result = await this.storage.getFileView(
-                environment_variables.appwriteBucketId , 
-                fileId)
+                environment_variables.appwriteBucketId, 
+                fileId
+            )
+            console.log("the file url is : ", result)
             return result;
+        } catch(error) {
+            console.log("Error getting file preview:", error);
+            throw error;
         }
-        catch{
-
-        }
-
-     }
-     async deleteTheFile(fileId){
+    }
+    
+    async deleteTheFile(fileId){
         try {
             await this.storage.deleteFile(
-                environment_variables.appwriteBucketId , 
+                environment_variables.appwriteBucketId, 
                 fileId
             )
             return true
         } catch (error) {
-            console.log(error);
+            console.log("Error deleting file:", error);
             return false;
-            
         }
-     }
-
+    }
 }
 
 const services = new Service();
-export default services 
+export default services;
